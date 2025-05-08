@@ -15,11 +15,17 @@ public class App {
     public String appName;
 
     public static void main(String[] args) {
-        simpleMethod("value");
+        try {
+            simpleMethod("value");
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SimpleAnnotation(name="simple")
-    public static void simpleMethod(@ParameterAnnotation String value){
+    public static void simpleMethod(@ParameterAnnotation String value) throws NoSuchMethodException {
         System.out.println("simple method " + value);
+        SimpleAnnotation annotation = App.class.getDeclaredMethod("simpleMethod", String.class).getAnnotation(SimpleAnnotation.class);
+        System.out.println("annotation name value: " + annotation.name());
     }
 }
