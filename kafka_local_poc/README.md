@@ -8,3 +8,9 @@ start with:
 ´´´
 . start.sh
 ´´´
+
+run java with:
+´´´
+cd my-app
+mvn -q compile exec:java -Dexec.mainClass=com.example.App
+´´´
