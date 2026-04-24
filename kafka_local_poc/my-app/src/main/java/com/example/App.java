@@ -1,8 +1,10 @@
 package com.example;
 
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
@@ -27,5 +29,24 @@ public class App
         final Topology topology = builder.build();
 
         System.out.println( topology.describe() );
+
+        final KafkaStreams streams = new KafkaStreams(topology, props);
+        final CountDownLatch latch = new CountDownLatch(1);
+        // attach shutdown handler to catch control-c
+        Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
+            @Override
+            public void run() {
+                streams.close();
+                latch.countDown();
+            }
+        });
+
+        try {
+            streams.start();
+            latch.await();
+        } catch (Throwable e) {
+            System.exit(1);
+        }
+        System.exit(0);
     }
 }
