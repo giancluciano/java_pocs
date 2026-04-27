@@ -70,3 +70,5 @@ And `start.sh` does the KRaft-specific bootstrap:
 2. `kafka-storage.sh format --standalone -t $UUID -c server.properties` — writes the initial metadata log + a `meta.properties` marker into `log.dirs` so the node knows it belongs to that cluster. ZooKeeper-mode clusters didn't need this step.
 
 In short: **KRaft folds the "who's in charge and what does the cluster look like" problem back into Kafka itself**, making it operationally simpler, faster to recover, and able to scale to far more partitions.
+
+
