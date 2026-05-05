@@ -23,13 +23,14 @@ public class App {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
-        try (var consumer = new KafkaConsumer<String, String>(props)) {
+        var consumer = new KafkaConsumer<String, String>(props);
+        Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+
+        try {
             consumer.subscribe(List.of(TOPIC));
             System.out.printf("Subscribed to '%s' on %s (group=%s)%n", TOPIC, BOOTSTRAP_SERVERS, GROUP_ID);
-
-            Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
             while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
@@ -37,9 +38,24 @@ public class App {
                     System.out.printf("offset=%d key=%s value=%s partition=%d%n",
                             record.offset(), record.key(), record.value(), record.partition());
                 }
+                if (!records.isEmpty()) {
+                    consumer.commitAsync((offsets, exception) -> {
+                        if (exception != null) {
+                            System.err.printf("Async commit failed for %s: %s%n", offsets, exception.getMessage());
+                        }
+                    });
+                }
             }
         } catch (org.apache.kafka.common.errors.WakeupException e) {
             System.out.println("Shutting down consumer.");
+        } finally {
+            try {
+                consumer.commitSync();
+            } catch (Exception e) {
+                System.err.println("Final commit failed: " + e.getMessage());
+            } finally {
+                consumer.close();
+            }
         }
     }
 }

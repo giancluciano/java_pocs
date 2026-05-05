@@ -21,7 +21,7 @@ cd kafka_2.13-4.2.0
 
 # Format storage (only needed the first time, or after wiping logs)
 KAFKA_CLUSTER_ID=$(bin/kafka-storage.sh random-uuid)
-bin/kafka-storage.sh format -t "$KAFKA_CLUSTER_ID" -c config/server.properties
+bin/kafka-storage.sh format -t "$KAFKA_CLUSTER_ID" -c config/server.properties --standalone
 
 # Start the broker (foreground)
 bin/kafka-server-start.sh config/server.properties
