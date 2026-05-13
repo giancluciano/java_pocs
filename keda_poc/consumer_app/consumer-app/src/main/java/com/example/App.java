@@ -1,0 +1,64 @@
+package com.example;
+
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.Properties;
+
+public class App {
+
+    private static final String BOOTSTRAP_SERVERS =
+            System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
+    private static final String GROUP_ID =
+            System.getenv().getOrDefault("KAFKA_GROUP_ID", "consumer-app-group");
+    private static final String TOPIC =
+            System.getenv().getOrDefault("KAFKA_TOPIC", "demo-topic");
+
+    public static void main(String[] args) {
+        var props = new Properties();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+
+        var consumer = new KafkaConsumer<String, String>(props);
+        Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+
+        try {
+            consumer.subscribe(List.of(TOPIC));
+            System.out.printf("Subscribed to '%s' on %s (group=%s)%n", TOPIC, BOOTSTRAP_SERVERS, GROUP_ID);
+
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(Duration.ofSeconds(1));
+                for (ConsumerRecord<String, String> record : records) {
+                    System.out.printf("offset=%d key=%s value=%s partition=%d%n",
+                            record.offset(), record.key(), record.value(), record.partition());
+                }
+                if (!records.isEmpty()) {
+                    consumer.commitAsync((offsets, exception) -> {
+                        if (exception != null) {
+                            System.err.printf("Async commit failed for %s: %s%n", offsets, exception.getMessage());
+                        }
+                    });
+                }
+            }
+        } catch (org.apache.kafka.common.errors.WakeupException e) {
+            System.out.println("Shutting down consumer.");
+        } finally {
+            try {
+                consumer.commitSync();
+            } catch (Exception e) {
+                System.err.println("Final commit failed: " + e.getMessage());
+            } finally {
+                consumer.close();
+            }
+        }
+    }
+}
