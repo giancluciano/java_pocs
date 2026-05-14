@@ -11,9 +11,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class App {
 
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    private static final String TOPIC = "demo-topic";
-    private static final long SEND_INTERVAL_MS = 1000L;
+    private static final String BOOTSTRAP_SERVERS =
+            System.getenv().getOrDefault("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092");
+    private static final String TOPIC =
+            System.getenv().getOrDefault("KAFKA_TOPIC", "demo-topic");
+    private static final long SEND_INTERVAL_MS =
+            Long.parseLong(System.getenv().getOrDefault("SEND_INTERVAL_MS", "1000"));
 
     public static void main(String[] args) throws InterruptedException {
         var props = new Properties();

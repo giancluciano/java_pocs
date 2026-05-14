@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer-app
+  labels:
+    app: consumer-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: consumer-app
+  template:
+    metadata:
+      labels:
+        app: consumer-app
+    spec:
+      containers:
+        - name: consumer
+          image: consumer-app:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: kafka-config
+          env:
+            - name: KAFKA_GROUP_ID
+              value: "consumer-app-group"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"

@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer-app
+  labels:
+    app: producer-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer-app
+  template:
+    metadata:
+      labels:
+        app: producer-app
+    spec:
+      containers:
+        - name: producer
+          image: producer-app:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: kafka-config
+          env:
+            - name: SEND_INTERVAL_MS
+              value: "1000"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
