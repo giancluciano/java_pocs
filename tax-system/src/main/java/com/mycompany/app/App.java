@@ -13,9 +13,12 @@ public class App {
                 new Tax(TaxType.PIS, california.code(), Year.of(2026), new BigDecimal("0.0165"))
         ));
 
-        Product product = new Product("P-001", "Laptop", "Eletronic", TaxType.ICMS, california.code());
+        Product product = new Product("P-001", "Laptop", "Eletronic", new BigDecimal("1299.99"), TaxType.ICMS, california.code());
 
-        System.out.println(product);
+        Tax tax = registry.find(product.taxKey())
+                .orElseThrow(() -> new IllegalStateException("No tax for " + product.taxKey()));
+
+        System.out.println(product.describe(tax));
         System.out.println(california);
 
     }
