@@ -19,6 +19,13 @@ public class App {
                 .orElseThrow(() -> new IllegalStateException("No tax for " + product.taxKey()));
 
         System.out.println(product.describe(tax));
+
+        Product book = new Product("P-002", "Clean Code", "Book", new BigDecimal("49.90"), TaxType.PIS, california.code());
+
+        Tax bookTax = registry.find(book.taxKey())
+                .orElseThrow(() -> new IllegalStateException("No tax for " + book.taxKey()));
+
+        System.out.println(book.describe(bookTax));
         System.out.println(california);
 
     }
