@@ -25,4 +25,20 @@ class TaxRegistryTest {
         assertTrue(found.isPresent());
         assertEquals(icms, found.get());
     }
+
+    @Test
+    void findReturnsEmptyForUnknownKey() {
+        TaxRegistry registry = new TaxRegistry(List.of());
+
+        assertFalse(registry.find(new Tax.Key(TaxType.ICMS, "SP")).isPresent());
+    }
+
+    @Test
+    void constructorRejectsDuplicateKeys() {
+        Tax first = new Tax(TaxType.ICMS, "SP", Year.of(2026), new BigDecimal("0.18"));
+        Tax duplicate = new Tax(TaxType.ICMS, "SP", Year.of(2025), new BigDecimal("0.17"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> new TaxRegistry(List.of(first, duplicate)));
+    }
 }
