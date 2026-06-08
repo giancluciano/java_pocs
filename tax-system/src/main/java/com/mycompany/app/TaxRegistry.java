@@ -25,4 +25,10 @@ public final class TaxRegistry {
     public Optional<Tax> find(Tax.Key key) {
         return Optional.ofNullable(taxesByKey.get(key));
     }
+
+    public List<Tax> findByTaxType(TaxType taxType) {
+        return taxesByKey.values().stream()
+                .filter(tax -> tax.taxType() == taxType)
+                .toList();
+    }
 }
