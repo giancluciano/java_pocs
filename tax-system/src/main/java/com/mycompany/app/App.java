@@ -19,10 +19,15 @@ public class App {
                 new Tax(TaxType.PIS, florida.code(), Year.of(2026), new BigDecimal("0.05"))
         ));
 
+        TaxRules rules = TaxRules.defaults();
+
         Product product = new Product("P-001", "Laptop", "Eletronic", new BigDecimal("1299.99"), TaxType.ICMS);
-        product.calculate(registry);
+        product.calculate(registry, rules);
 
         Product book = new Product("P-002", "Clean Code", "Book", new BigDecimal("49.90"), TaxType.PIS);
-        book.calculate(registry);
+        book.calculate(registry, rules);
+
+        Product pen = new Product("P-003", "Pen", "Stationery", new BigDecimal("5.00"), TaxType.PIS);
+        pen.calculate(registry, rules);
     }
 }
