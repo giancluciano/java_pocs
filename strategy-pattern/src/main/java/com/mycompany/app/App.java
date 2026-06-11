@@ -5,6 +5,9 @@ package com.mycompany.app;
  */
 public class App {
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        int distance = 5;
+        Transport vehicle = Transport.Bike;
+
+        CostCalculator costCalculator = new CostCalculator();
     }
 }
